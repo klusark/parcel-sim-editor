@@ -1,0 +1,19 @@
+{
+  "name": "parcel-sim-editor",
+  "description": "Edits parcel simulator save files",
+  "dependencies": {
+    "gvas-json-converter": "github:klusark/GVAS-JSON-Converter"
+  },
+  "devDependencies": {
+    "copy-webpack-plugin": "latest",
+    "html-webpack-plugin": "latest",
+    "webpack": "latest",
+    "webpack-cli": "latest",
+    "webpack-dev-server": "latest"
+  },
+  "scripts": {
+    "start": "webpack-dev-server --mode development",
+    "build-dev": "webpack --mode development",
+    "build-prod": "webpack --mode production"
+  }
+}

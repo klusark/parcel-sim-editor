@@ -1,0 +1,413 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    color: white;
+    overflow: hidden;
+}
+
+.editor-container {
+    display: flex;
+    height: 100vh;
+    gap: 15px;
+    padding: 15px;
+}
+
+.sidebar {
+    width: 200px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow-y: auto;
+}
+
+.sidebar h3 {
+    margin-bottom: 15px;
+    text-align: center;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.tile-bank {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.bank-tile {
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.bank-tile:hover {
+    border-color: #64ffda;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(100, 255, 218, 0.3);
+}
+
+.bank-tile.selected {
+    border-color: #ff6b6b;
+    box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+}
+
+.main-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.toolbar {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.tool-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.tool-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.tool-btn.active {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+}
+
+.grid-container {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: auto;
+    position: relative;
+}
+
+.game-area {
+    display: inline-block;
+    position: relative;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(50, 16px);
+    grid-template-rows: repeat(40, 16px);
+    gap: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px;
+    border-radius: 8px;
+    position: relative;
+}
+
+.grid-cell {
+    width: 16px;
+    height: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    cursor: crosshair;
+}
+
+.grid-cell:hover {
+    border-color: #64ffda;
+    box-shadow: inset 0 0 8px rgba(100, 255, 218, 0.3);
+}
+
+.grid-cell.selected {
+    background: rgba(255, 107, 107, 0.3);
+    border-color: #ff6b6b;
+    z-index: 10;
+}
+
+.grid-cell.drag-preview {
+    opacity: 0.7;
+    transform: scale(0.95);
+}
+
+.selection-box {
+    position: absolute;
+    border: 2px dashed #64ffda;
+    background: rgba(100, 255, 218, 0.1);
+    pointer-events: none;
+    z-index: 20;
+}
+
+.drag-ghost {
+    position: fixed;
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.8;
+    transform: scale(1.1);
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+/* Deposit zones */
+.deposit-zones {
+    position: absolute;
+}
+
+.deposit-zone {
+    position: absolute;
+    border: 2px solid rgba(255, 193, 7, 0.8);
+    background: rgba(255, 193, 7, 0.15);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: bold;
+    color: #FFC107;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+    width: 16px;
+    height: 16px;
+}
+
+.deposit-zone:hover {
+    border-color: #FFC107;
+    background: rgba(255, 193, 7, 0.3);
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.4);
+    z-index: 10;
+}
+
+.deposit-zone.selected {
+    border-color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.3);
+    color: #ff6b6b;
+}
+
+.deposit-zone::before {
+    content: '';
+    position: absolute;
+    background: currentColor;
+    opacity: 0.4;
+}
+
+/* Connection lines to tiles */
+.deposit-zone.top::before {
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 4px;
+}
+
+.deposit-zone.bottom::before {
+    top: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 4px;
+}
+
+.deposit-zone.left::before {
+    right: -2px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 2px;
+}
+
+.deposit-zone.right::before {
+    left: -2px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 2px;
+}
+
+/* Deposit zone sides */
+.deposits-top { 
+    top: -20px; 
+    left: 2px; 
+    right: 2px; 
+    height: 16px; 
+    display: flex;
+    align-items: center;
+}
+.deposits-bottom { 
+    bottom: -20px; 
+    left: 2px; 
+    right: 2px; 
+    height: 16px; 
+    display: flex;
+    align-items: center;
+}
+.deposits-left { 
+    left: -20px; 
+    top: 2px; 
+    bottom: 2px; 
+    width: 16px; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.deposits-right { 
+    right: -20px; 
+    top: 2px; 
+    bottom: 2px; 
+    width: 16px; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Grid cell connection indicators */
+.grid-cell.has-deposit {
+    box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.6);
+    position: relative;
+}
+
+.grid-cell.has-deposit.top {
+    box-shadow: 0 -2px 0 2px rgba(255, 193, 7, 0.8);
+}
+
+.grid-cell.has-deposit.bottom {
+    box-shadow: 0 2px 0 2px rgba(255, 193, 7, 0.8);
+}
+
+.grid-cell.has-deposit.left {
+    box-shadow: -2px 0 0 2px rgba(255, 193, 7, 0.8);
+}
+
+.grid-cell.has-deposit.right {
+    box-shadow: 2px 0 0 2px rgba(255, 193, 7, 0.8);
+}
+
+.info-panel {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    backdrop-filter: blur(10px);
+}
+
+.deposit-config {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.deposit-config h4 {
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #FFC107;
+}
+
+.deposit-input {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: white;
+    font-size: 12px;
+}
+
+.deposit-input:focus {
+    outline: none;
+    border-color: #FFC107;
+    background: rgba(255, 193, 7, 0.1);
+}
+
+
+
+/* Alternative tile types for variety */
+.tile-wall {
+    background: linear-gradient(135deg, #424242, #212121);
+    border: 1px solid #616161;
+}
+
+.tile-splitter {
+    background: linear-gradient(135deg, #795548, #5D4037);
+    position: relative;
+}
+
+.tile-splitter::before {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 2px;
+    background: #FF9800;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.tile-splitter::after {
+    content: '';
+    position: absolute;
+    width: 2px;
+    height: 8px;
+    background: #FF9800;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.tile-merger {
+    background: linear-gradient(135deg, #7B1FA2, #4A148C);
+    position: relative;
+}
+
+.tile-merger::before {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border: 1px solid #E1BEE7;
+    border-radius: 50%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.deposit-color {
+    width: 100%;
+    height: 30px;
+    margin: 5px 0;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
