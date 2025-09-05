@@ -1,51 +1,8 @@
-const { convertJsonToSav, convertSavToJson, convertRawToSav, convertSavToRaw } = require("gvas-json-converter");
-
-function downloadJson(filename, jsonString) {
-    const element = document.createElement("a");
-    element.setAttribute("href", "data:text/json;charset=utf-8," + encodeURIComponent(jsonString));
-    element.setAttribute("download", filename);
-    element.click();
-}
-
-function downloadSav(filename, savArrayBuffer) {
-    const blob = new Blob([savArrayBuffer], { type: "octet/stream" });
-
-    const element = document.createElement("a");
-    element.setAttribute("href", window.URL.createObjectURL(blob));
-    element.setAttribute("download", filename);
-    element.click();
-}
-
-function loadSavFile() {
-    const fileReader = new FileReader();
-    fileReader.fileName = this.files[0].name;
-
-    fileReader.onload = function (e) {
-        downloadJson(fileReader.fileName + ".json", convertSavToJson(e.target.result));
-    };
-
-    fileReader.readAsArrayBuffer(this.files[0]);
-}
-
-function loadJsonFile() {
-    const fileReader = new FileReader();
-    fileReader.fileName = this.files[0].name;
-
-    fileReader.onload = function (e) {
-        downloadSav(fileReader.fileName + ".sav", convertJsonToSav(e.target.result));
-    };
-
-    fileReader.readAsText(this.files[0]);
-}
-
-//document.getElementById("sav-input").addEventListener("change", loadSavFile);
-//document.getElementById("json-input").addEventListener("change", loadJsonFile);
-
+const { convertRawToSav, convertSavToRaw } = require("gvas-json-converter");
 
 // Game state
 let currentTool = 'paint';
 let selectedTileType = 'belt';
-let selectedDirection = 'up';
 let selectedCells = new Set();
 let isDragging = false;
 let isSelecting = false;
@@ -90,7 +47,6 @@ function init() {
     createTileBank();
     createGrid();
     setupEventListeners();
-    updateDepositCount();
 }
 
 function createTileBank() {
@@ -113,7 +69,44 @@ function createGrid() {
     for (let row = 0; row < 40; row++) {
         for (let col = 0; col < 50; col++) {
             const cell = document.createElement('div');
-            cell.className = 'grid-cell';
+            if (row < 20 || col >= 20) {
+                cell.className = 'grid-cell';
+            }
+            // truck
+            if ((row == 19 && col == 17) || (row == 19 && col == 2) || (row == 19 && col == 2) || (row == 39 && col == 27) || (row == 39 && col == 37) || (row == 39 && col == 47)) {
+                cell.classList.add('has-deposit');
+            }
+            // Invalid
+            if ((row == 0 && col == 2) || (row == 0 && col == 47)) {
+                cell.classList.add('has-deposit');
+            }
+            // Air
+            if (row == 0 && col == 17) {
+                cell.classList.add('has-deposit');
+            }
+            // Ship
+            if (row == 0 && col == 27) {
+                cell.classList.add('has-deposit');
+            }
+            // Truck or Rail
+            if (row == 17 && col == 0) {
+                cell.classList.add('has-deposit');
+            }
+
+            // Truck
+            if (row == 7 && col == 49) {
+                cell.classList.add('has-deposit');
+            }
+
+            // Rail
+            if (row == 17 && col == 49) {
+                cell.classList.add('has-deposit');
+            }
+
+            // Air or Ship
+            if (row == 27 && col == 49) {
+                cell.classList.add('has-deposit');
+            }
             cell.dataset.row = row;
             cell.dataset.col = col;
             gameGrid.appendChild(cell);
@@ -128,8 +121,6 @@ function setupEventListeners() {
             document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentTool = btn.dataset.tool;
-            document.getElementById('currentTool').textContent =
-                currentTool.charAt(0).toUpperCase() + currentTool.slice(1);
             clearSelection();
         });
     });
@@ -165,16 +156,16 @@ function setupEventListeners() {
         } else if (e.ctrlKey && e.key === 'a') {
             e.preventDefault();
             selectAll();
-        }
-        // Rotate cell on 'r' key when mouse is over a cell
-        else if (e.key === 'r') {
-            if (window._hoveredCellRow !== undefined && window._hoveredCellCol !== undefined) {
-                rotateCell(window._hoveredCellRow, window._hoveredCellCol);
+        } else {
+            if (window._hoveredCellRow === undefined || window._hoveredCellCol == undefined) {
+                return;
             }
-        }
-        else if (e.key === 'x') {
-            if (window._hoveredCellRow !== undefined && window._hoveredCellCol !== undefined) {
+            if (e.key === 'r') {
+                rotateCell(window._hoveredCellRow, window._hoveredCellCol);
+            } else if (e.key === 'x') {
                 flipCell(window._hoveredCellRow, window._hoveredCellCol);
+            } else if (e.key === 'd') {
+                eraseCell(window._hoveredCellRow, window._hoveredCellCol);
             }
         }
     });
@@ -194,10 +185,15 @@ gameGrid.addEventListener('mouseout', (e) => {
 });
 
 function handleMouseDown(e) {
-    if (!e.target.classList.contains('grid-cell')) return;
+    if (!e.target.classList.contains('grid-cell')) {
+        return;
+    }
 
     const row = parseInt(e.target.dataset.row);
     const col = parseInt(e.target.dataset.col);
+
+    paintCell(row, col);
+    return;
 
     if (currentTool === 'paint') {
         paintCell(row, col);
@@ -366,8 +362,6 @@ function toggleCellSelection(row, col) {
         selectedCells.add(cellId);
         cell.classList.add('selected');
     }
-
-    updateSelectedCount();
 }
 
 function startSelection(e, row, col) {
@@ -416,8 +410,6 @@ function updateSelection(e) {
             getCellElement(r, c).classList.add('selected');
         }
     }
-
-    updateSelectedCount();
 }
 
 function finishSelection() {
@@ -495,7 +487,6 @@ function finishDrag(e) {
     });
 
     isDragging = false;
-    updateSelectedCount();
 }
 
 function clearSelection() {
@@ -504,7 +495,6 @@ function clearSelection() {
         getCellElement(row, col).classList.remove('selected');
     });
     selectedCells.clear();
-    updateSelectedCount();
 }
 
 function selectAll() {
@@ -518,7 +508,6 @@ function selectAll() {
             }
         }
     }
-    updateSelectedCount();
 }
 
 function eraseSelectedCells() {
@@ -531,14 +520,6 @@ function eraseSelectedCells() {
 
 function getCellElement(row, col) {
     return document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-}
-
-function updateSelectedCount() {
-    document.getElementById('selectedCount').textContent = selectedCells.size;
-}
-
-function updateDepositCount() {
-    document.getElementById('depositCount').textContent = deposits.length;
 }
 
 function createDeposit(side, tileRow, tileCol) {
@@ -568,7 +549,6 @@ function createDeposit(side, tileRow, tileCol) {
 
     deposits.push(deposit);
     renderDeposits();
-    updateDepositCount();
     updateGridCellConnections();
 
     // Clear the label input
@@ -594,7 +574,6 @@ function deleteSelectedDeposit() {
         deposits = deposits.filter(d => d.id !== selectedDeposit.id);
         selectedDeposit = null;
         renderDeposits();
-        updateDepositCount();
         updateGridCellConnections();
 
         document.getElementById('depositLabel').value = '';
@@ -847,6 +826,42 @@ export function exportLevel() {
 window.exportLevel = exportLevel;
 
 
+function getExtraTileOffsetsFromQuat(quat, flipped) {
+    // Calculate the angle and axis from the quaternion
+    const w = Math.max(-1, Math.min(1, quat.w)); // Clamp for acos
+    const angle = 2 * Math.acos(w);
+    const s = Math.sqrt(1 - w * w);
+
+    let axisX = 0, axisY = 0, axisZ = 1; // Default axis Z
+    if (s >= 0.0001) {
+        axisX = quat.x / s;
+        axisY = quat.y / s;
+        axisZ = quat.z / s;
+    }
+
+    // For 90-degree increments, check if the rotation is "vertical" or "horizontal"
+    // Assume axisZ is dominant for grid-aligned objects
+    // 0 or 180 deg: horizontal (x direction), 90 or 270 deg: vertical (y direction)
+    const deg = Math.round(angle * 180 / Math.PI) % 360;
+
+    // If it's rotated backwards, invert the flipped state
+    if (axisZ < 0) {
+        flipped = !flipped; // Invert flip if rotated 180 degrees around Z
+    }
+
+    if (deg === 0 || deg === 180) {
+        // Horizontal: extra tiles at (-1,0) and (+1,0)
+        return [[0, -1, flipped ? 'bridger_down' : 'bridger_up'], [0, 1, flipped ? 'bridger_up' : 'bridger_down']];
+    } else if (deg === 90 || deg === 270) {
+
+        // Vertical: extra tiles at (0,-1) and (0,+1)
+        return [[-1, 0, flipped ? 'bridger_up' : 'bridger_down'], [1, 0, flipped ? 'bridger_down' : 'bridger_up']];
+    } else {
+        // Fallback: treat as horizontal
+        return [[-1, 0], [1, 0]];
+    }
+}
+
 function processInteractable(interactable) {
     let transform = interactable[2].value;
     let ObjectName = interactable[0].value;
@@ -951,39 +966,14 @@ function processInteractable(interactable) {
 
     if (type == 'bridger') {
         // Racks are 3x1 so occupy extra tiles
-        const s = Math.sqrt(1 - quat.w * quat.w);
-        if (!(s < 0.0001)) {
-            if (x + 1 < 50) {
-                grid[y][x + 1] = { ...tileData };
-                grid[y][x + 1].type = 'bridger_up';
-                if (tileData.flipped) {
-                    grid[y][x + 1].type = 'bridger_down';
-                }
-            }
-            if (x + 1 > 0) {
-                grid[y][x - 1] = { ...tileData };
-                grid[y][x - 1].type = 'bridger_down';
-                if (tileData.flipped) {
-                    grid[y][x - 1].type = 'bridger_up';
-                }
-            }
-        } else {
-            if (y + 1 < 50) {
-                grid[y + 1][x] = { ...tileData };
-                grid[y + 1][x].type = 'bridger_up';
-                if (tileData.flipped) {
-                    grid[y + 1][x].type = 'bridger_down';
-                }
-            }
-            if (y + 1 > 0) {
-                grid[y - 1][x] = { ...tileData };
-                grid[y - 1][x].type = 'bridger_down';
-                if (tileData.flipped) {
-                    grid[y - 1][x].type = 'bridger_up';
-                }
-            }
+        const extraOffsets = getExtraTileOffsetsFromQuat(quat, tileData.flipped);
+        // To get the absolute positions:
+        const extraTiles = extraOffsets.map(([dx, dy, type]) => [x + dx, y + dy, type]);
+        extraTiles.forEach(([x, y, type]) => {
+            grid[y][x] = { ...tileData };
+            grid[y][x].type = type;
+        });
 
-        }
         return;
     }
 
@@ -995,23 +985,6 @@ function processInteractable(interactable) {
     grid[y][x] = tileData;
 
     if (type == 'rack_red') {
-        // Racks are 3x1 so occupy extra tiles
-        const s = Math.sqrt(1 - quat.w * quat.w);
-        if (s < 0.0001) {
-            if (x + 1 < 50)
-                grid[y][x + 1] = grid[y][x];
-            if (x + 1 > 0)
-                grid[y][x - 1] = grid[y][x];
-        } else {
-            if (y + 1 < 50)
-                grid[y + 1][x] = grid[y][x];
-            if (y + 1 > 0)
-                grid[y - 1][x] = grid[y][x];
-
-        }
-    }
-
-    if (type == 'bridger') {
         // Racks are 3x1 so occupy extra tiles
         const s = Math.sqrt(1 - quat.w * quat.w);
         if (s < 0.0001) {
@@ -1080,8 +1053,6 @@ function updateGrid() {
                 cell.dataset.guid = tileData.guid;
                 cell.dataset.x = tileData.x;
                 cell.dataset.y = tileData.y;
-            } else {
-                cell.className = 'grid-cell';
             }
         }
     }
@@ -1145,8 +1116,6 @@ export function importLevel() {
                     updateGrid();
 
                     clearSelection();
-                    updateDepositCount();
-                    //alert('Level imported successfully!');
                 } catch (error) {
                     alert('Error importing level: ' + error.message);
                 }

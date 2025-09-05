@@ -4,40 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>GVAS-JSON-Converter</title>
+    <title>Parcel Simulator Editor</title>
     <link rel="stylesheet" href="./css/bootstrap.min.css">
     <link rel="stylesheet" href="./css/site.css">
 </head>
 
 <body>
-
     <div class="editor-container">
         <div class="sidebar">
             <h3>Tile Bank</h3>
             <div class="tile-bank" id="tileBank">
                 <!-- Tiles will be populated by JavaScript -->
             </div>
-
-            <div class="deposit-config">
-                <h4>Deposit Zones</h4>
-                <button class="tool-btn" onclick="toggleDepositMode()">
-                    <span id="depositModeText">Add Deposits</span>
-                </button>
-                <div id="depositControls" style="display: none;">
-                    <input type="text" class="deposit-input" id="depositLabel" placeholder="Zone Label (A, B, 1, 2...)" maxlength="3">
-                    <input type="color" class="deposit-color" id="depositColor" value="#FFC107">
-                    <button class="tool-btn" onclick="deleteSelectedDeposit()" style="margin-top: 8px; font-size: 11px;">Delete Selected</button>
-                </div>
-            </div>
         </div>
         
         <div class="main-area">
             <div class="toolbar">
-                <button class="tool-btn active" data-tool="paint">Paint</button>
-                <button class="tool-btn" data-tool="select">Select</button>
-                <button class="tool-btn" data-tool="erase">Erase</button>
-                <button class="tool-btn" data-tool="rotate">Rotate</button>
-                <button class="tool-btn" data-tool="flip">Flip</button>
                 <button class="tool-btn" data-tool="deposit">Deposits</button>
                 <button class="tool-btn" onclick="clearGrid()">Clear All</button>
                 <button class="tool-btn" onclick="exportLevel()">Export</button>
@@ -57,12 +39,6 @@
                     <div class="deposit-zones deposits-bottom" data-side="bottom"></div>
                 </div>
                 <div class="selection-box" id="selectionBox" style="display: none;"></div>
-                <div class="info-panel">
-                    <div>Mode: <span id="currentTool">Paint</span></div>
-                    <div>Selected: <span id="selectedCount">0</span> tiles</div>
-                    <div>Deposits: <span id="depositCount">0</span></div>
-                    <div>Grid: 50×40</div>
-                </div>
             </div>
         </div>
     </div>
