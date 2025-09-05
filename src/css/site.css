@@ -49,6 +49,7 @@ body {
     border-radius: 6px;
     transition: all 0.2s ease;
     position: relative;
+    image-rendering: pixelated;
 }
 
 .bank-tile:hover {
@@ -348,58 +349,6 @@ body {
     outline: none;
     border-color: #FFC107;
     background: rgba(255, 193, 7, 0.1);
-}
-
-
-
-/* Alternative tile types for variety */
-.tile-wall {
-    background: linear-gradient(135deg, #424242, #212121);
-    border: 1px solid #616161;
-}
-
-.tile-splitter {
-    background: linear-gradient(135deg, #795548, #5D4037);
-    position: relative;
-}
-
-.tile-splitter::before {
-    content: '';
-    position: absolute;
-    width: 8px;
-    height: 2px;
-    background: #FF9800;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.tile-splitter::after {
-    content: '';
-    position: absolute;
-    width: 2px;
-    height: 8px;
-    background: #FF9800;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.tile-merger {
-    background: linear-gradient(135deg, #7B1FA2, #4A148C);
-    position: relative;
-}
-
-.tile-merger::before {
-    content: '';
-    position: absolute;
-    width: 6px;
-    height: 6px;
-    border: 1px solid #E1BEE7;
-    border-radius: 50%;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
 }
 
 .deposit-color {
