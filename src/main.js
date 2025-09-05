@@ -18,28 +18,116 @@ let bridgerMode = false;
 
 // Tile types for conveyor system
 const tileTypes = [
-    { type: 'belt', class: '/Game/Core/Blueprints/Actors/ConveyorBelt/BP_ConveyorBelt_Straight_Tier1.BP_ConveyorBelt_Straight_Tier1_C' },
-    { type: 'corner', class: '/Game/Core/Blueprints/Actors/ConveyorBelt/BP_ConveyorBelt_Corner_Tier1.BP_ConveyorBelt_Corner_Tier1_C' },
-    { type: 'loader', class: '/Game/Core/Blueprints/Actors/ConveyorBelt/Loader/BP_ConveyorBelt_Loader.BP_ConveyorBelt_Loader_C' },
-    { type: 'unloader', class: '/Game/Core/Blueprints/Actors/ConveyorBelt/Loader/BP_ConveyorBelt_Unloader.BP_ConveyorBelt_Unloader_C' },
-    { type: 'joiner', class: '/Game/Core/Blueprints/Actors/ConveyorBelt/Joiner/BP_ConveyorBelt_Joiner.BP_ConveyorBelt_Joiner_C' },
-    { type: 'pauser', class: '/Game/Core/Blueprints/Actors/ConveyorBelt/Pauser/BP_ConveyorBelt_Pauser.BP_ConveyorBelt_Pauser_C' },
-    { type: 'serial', class: '/Game/Core/Blueprints/Actors/ConveyorBelt/CriteriaScanner/BP_ConveyorBelt_CriteriaScanner_SerialNumber.BP_ConveyorBelt_CriteriaScanner_SerialNumber_C' },
-    { type: 'weight', class: '/Game/Core/Blueprints/Actors/ConveyorBelt/CriteriaScanner/BP_ConveyorBelt_CriteriaScanner_Weight.BP_ConveyorBelt_CriteriaScanner_Weight_C' },
-    { type: 'country', class: '/Game/Core/Blueprints/Actors/ConveyorBelt/CriteriaScanner/BP_ConveyorBelt_CriteriaScanner_Country.BP_ConveyorBelt_CriteriaScanner_Country_C' },
-    { type: 'rack_red', class: '/Game/Core/Blueprints/Actors/Storage/Medium/BP_StorageRack_ExtraLarge_Red.BP_StorageRack_ExtraLarge_Red_C' },
-    { type: 'sticker_deny', class: '/Game/Core/Blueprints/Actors/ConveyorBelt/StickerApplier/BP_ConveyorBelt_StickerApplier_Deny.BP_ConveyorBelt_StickerApplier_Deny_C' },
-    { type: 'sticker_approve', class: '/Game/Core/Blueprints/Actors/ConveyorBelt/StickerApplier/BP_ConveyorBelt_StickerApplier_Approve.BP_ConveyorBelt_StickerApplier_Approve_C' },
-    { type: 'stamp', class: '/Game/Core/Blueprints/Actors/ConveyorBelt/CriteriaScanner/BP_ConveyorBelt_CriteriaScanner_Stamp.BP_ConveyorBelt_CriteriaScanner_Stamp_C' },
-    { type: 'scanner', class: '/Game/Core/Blueprints/Actors/ConveyorBelt/Scanner2/BP_ConveyorBelt_Scanner2_Tier1.BP_ConveyorBelt_Scanner2_Tier1_C' },
-    { type: 'diverter', class: '/Game/Core/Blueprints/Actors/ConveyorBelt/Diverter/BP_ConveyorBelt_Diverter.BP_ConveyorBelt_Diverter_C' },
-    { type: 'bridger', class: '/Game/Core/Blueprints/Actors/ConveyorBelt/Bridger/BP_ConveyorBelt_Bridger.BP_ConveyorBelt_Bridger_C' },
-    { type: 'contents_prohibited', class: '/Game/Core/Blueprints/Actors/ConveyorBelt/CriteriaScanner/BP_ConveyorBelt_CriteriaScanner_ContentsProhibited.BP_ConveyorBelt_CriteriaScanner_ContentsProhibited_C' },
-    { type: 'cargo_type', class: '/Game/Core/Blueprints/Actors/ConveyorBelt/CriteriaScanner/BP_ConveyorBelt_CriteriaScanner_CargoType.BP_ConveyorBelt_CriteriaScanner_CargoType_C' },
-    { type: 'joiner_3way', class: '/Game/Core/Blueprints/Actors/ConveyorBelt/Joiner/BP_ConveyorBelt_Joiner_3Way.BP_ConveyorBelt_Joiner_3Way_C' },
-    { type: 'splitter', class: '/Game/Core/Blueprints/Actors/ConveyorBelt/Splitter/BP_ConveyorBelt_Splitter.BP_ConveyorBelt_Splitter_C' },
-    { type: 'splitter_2way', class: '/Game/Core/Blueprints/Actors/ConveyorBelt/Splitter/BP_ConveyorBelt_Splitter_2Way.BP_ConveyorBelt_Splitter_2Way_C' },
-    { type: 'launcher', class: '/Game/Core/Blueprints/Actors/ConveyorBelt/Launcher/BP_ConveyorBelt_Launcher.BP_ConveyorBelt_Launcher_C' }
+    {
+        type: 'belt',
+        name: 'Straight Conveyor',
+        class: '/Game/Core/Blueprints/Actors/ConveyorBelt/BP_ConveyorBelt_Straight_Tier1.BP_ConveyorBelt_Straight_Tier1_C'
+    },
+    {
+        type: 'corner',
+        name: 'Corner Conveyor',
+        class: '/Game/Core/Blueprints/Actors/ConveyorBelt/BP_ConveyorBelt_Corner_Tier1.BP_ConveyorBelt_Corner_Tier1_C'
+    },
+    {
+        type: 'loader',
+        name: 'Loader Conveyor',
+        class: '/Game/Core/Blueprints/Actors/ConveyorBelt/Loader/BP_ConveyorBelt_Loader.BP_ConveyorBelt_Loader_C'
+    },
+    {
+        type: 'unloader',
+        name: 'Unloader Conveyor',
+        class: '/Game/Core/Blueprints/Actors/ConveyorBelt/Loader/BP_ConveyorBelt_Unloader.BP_ConveyorBelt_Unloader_C'
+    },
+    {
+        type: 'joiner',
+        name: 'Joiner Conveyor',
+        class: '/Game/Core/Blueprints/Actors/ConveyorBelt/Joiner/BP_ConveyorBelt_Joiner.BP_ConveyorBelt_Joiner_C'
+    },
+    {
+        type: 'pauser',
+        name: 'Pauser Conveyor',
+        class: '/Game/Core/Blueprints/Actors/ConveyorBelt/Pauser/BP_ConveyorBelt_Pauser.BP_ConveyorBelt_Pauser_C'
+    },
+    {
+        type: 'serial',
+        name: 'Scanner Conveyor (Serial Number)',
+        class: '/Game/Core/Blueprints/Actors/ConveyorBelt/CriteriaScanner/BP_ConveyorBelt_CriteriaScanner_SerialNumber.BP_ConveyorBelt_CriteriaScanner_SerialNumber_C'
+    },
+    {
+        type: 'weight',
+        name: 'Scanner Conveyor (Weight)',
+        class: '/Game/Core/Blueprints/Actors/ConveyorBelt/CriteriaScanner/BP_ConveyorBelt_CriteriaScanner_Weight.BP_ConveyorBelt_CriteriaScanner_Weight_C'
+    },
+    {
+        type: 'country',
+        name: 'Scanner Conveyor (Country)',
+        class: '/Game/Core/Blueprints/Actors/ConveyorBelt/CriteriaScanner/BP_ConveyorBelt_CriteriaScanner_Country.BP_ConveyorBelt_CriteriaScanner_Country_C'
+    },
+    {
+        type: 'rack_red',
+        name: 'Large Red Storage',
+        class: '/Game/Core/Blueprints/Actors/Storage/Medium/BP_StorageRack_ExtraLarge_Red.BP_StorageRack_ExtraLarge_Red_C'
+    },
+    {
+        type: 'sticker_deny',
+        name: 'Sticker Applier Conveyor (Deny)',
+        class: '/Game/Core/Blueprints/Actors/ConveyorBelt/StickerApplier/BP_ConveyorBelt_StickerApplier_Deny.BP_ConveyorBelt_StickerApplier_Deny_C'
+    },
+    {
+        type: 'sticker_approve',
+        name: 'Sticker Applier Conveyor (Approve)',
+        class: '/Game/Core/Blueprints/Actors/ConveyorBelt/StickerApplier/BP_ConveyorBelt_StickerApplier_Approve.BP_ConveyorBelt_StickerApplier_Approve_C'
+    },
+    {
+        type: 'stamp',
+        name: 'Scanner Conveyor (Stamp)',
+        class: '/Game/Core/Blueprints/Actors/ConveyorBelt/CriteriaScanner/BP_ConveyorBelt_CriteriaScanner_Stamp.BP_ConveyorBelt_CriteriaScanner_Stamp_C'
+    },
+    {
+        type: 'scanner',
+        name: 'Sticker Checker Conveyor',
+        class: '/Game/Core/Blueprints/Actors/ConveyorBelt/Scanner2/BP_ConveyorBelt_Scanner2_Tier1.BP_ConveyorBelt_Scanner2_Tier1_C'
+    },
+    {
+        type: 'diverter',
+        name: 'Cargo Type Diverter Conveyor',
+        class: '/Game/Core/Blueprints/Actors/ConveyorBelt/Diverter/BP_ConveyorBelt_Diverter.BP_ConveyorBelt_Diverter_C'
+    },
+    {
+        type: 'bridger',
+        name: 'Bridger Conveyor',
+        class: '/Game/Core/Blueprints/Actors/ConveyorBelt/Bridger/BP_ConveyorBelt_Bridger.BP_ConveyorBelt_Bridger_C'
+    },
+    {
+        type: 'contents_prohibited',
+        name: 'Scanner Conveyor (Contents Prohibited)',
+        class: '/Game/Core/Blueprints/Actors/ConveyorBelt/CriteriaScanner/BP_ConveyorBelt_CriteriaScanner_ContentsProhibited.BP_ConveyorBelt_CriteriaScanner_ContentsProhibited_C'
+    },
+    {
+        type: 'cargo_type',
+        name: 'Scanner Conveyor (Cargo Type)',
+        class: '/Game/Core/Blueprints/Actors/ConveyorBelt/CriteriaScanner/BP_ConveyorBelt_CriteriaScanner_CargoType.BP_ConveyorBelt_CriteriaScanner_CargoType_C'
+    },
+    {
+        type: 'joiner_3way',
+        name: 'Multi Joiner Conveyor',
+        class: '/Game/Core/Blueprints/Actors/ConveyorBelt/Joiner/BP_ConveyorBelt_Joiner_3Way.BP_ConveyorBelt_Joiner_3Way_C'
+    },
+    {
+        type: 'splitter',
+        name: 'Smart Splitter Conveyor',
+        class: '/Game/Core/Blueprints/Actors/ConveyorBelt/Splitter/BP_ConveyorBelt_Splitter.BP_ConveyorBelt_Splitter_C'
+    },
+    {
+        type: 'splitter_2way',
+        name: 'Contents Inspection Diverter Conveyor',
+        class: '/Game/Core/Blueprints/Actors/ConveyorBelt/Splitter/BP_ConveyorBelt_Splitter_2Way.BP_ConveyorBelt_Splitter_2Way_C'
+    },
+    {
+        type: 'launcher',
+        name: 'Launcher Conveyor',
+        class: '/Game/Core/Blueprints/Actors/ConveyorBelt/Launcher/BP_ConveyorBelt_Launcher.BP_ConveyorBelt_Launcher_C'
+    }
 ];
 
 // Initialize the editor
