@@ -17,30 +17,33 @@
                 <!-- Tiles will be populated by JavaScript -->
             </div>
         </div>
-        
+
         <div class="main-area">
             <div class="toolbar">
-                <button class="tool-btn" data-tool="deposit">Deposits</button>
-                <button class="tool-btn" onclick="clearGrid()">Clear All</button>
                 <button class="tool-btn" onclick="exportLevel()">Export</button>
                 <button class="tool-btn" onclick="importLevel()">Import</button>
+                <button class="tool-btn" onclick="deleteParcels()">Delete Parcels</button>
+                <button class="tool-btn" onclick="editMoney()">Edit Money</button>
+                <button class="tool-btn" onclick="toggleBridgerMode()">Bridger Mode</button>
             </div>
-            
+
             <div class="grid-container">
                 <div class="game-area">
                     <div class="deposit-zones deposits-top" data-side="top"></div>
                     <div class="deposit-zones deposits-left" data-side="left"></div>
-                    
+
                     <div class="grid" id="gameGrid">
                         <!-- Grid cells will be populated by JavaScript -->
                     </div>
-                    
+
                     <div class="deposit-zones deposits-right" data-side="right"></div>
                     <div class="deposit-zones deposits-bottom" data-side="bottom"></div>
                 </div>
                 <div class="selection-box" id="selectionBox" style="display: none;"></div>
+
             </div>
         </div>
     </div>
 </body>
+
 </html>

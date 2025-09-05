@@ -13,7 +13,7 @@ let levelData = null;
 let deposits = [];
 let toErase = [];
 let selectedDeposit = null;
-let depositMode = false;
+let bridgerMode = false;
 
 
 // Tile types for conveyor system
@@ -263,6 +263,14 @@ function handleMouseUp(e) {
     }
 }
 
+function toggleBridgerMode() {
+    bridgerMode = !bridgerMode;
+
+    updateGrid();
+}
+
+window.toggleBridgerMode = toggleBridgerMode;
+
 function paintCell(row, col) {
     const cell = getCellElement(row, col);
     const tileData = tileTypes.find(t => t.type === selectedTileType);
@@ -273,18 +281,35 @@ function paintCell(row, col) {
     if (grid[row][col] && grid[row][col].guid) {
         toErase.push(grid[row][col].guid);
     }
-    grid[row][col] = {
+    let quat = {
+        x: 0,
+        y: 0,
+        z: 0,
+        w: 1
+    };
+    let cellData = {
         type: selectedTileType,
         dirty: true,
         x: col,
         y: row,
-        quat: {
-            x: 0,
-            y: 0,
-            z: 0,
-            w: 1
-        }
+        quat: quat
     };
+
+
+
+    if (selectedTileType == 'bridger') {
+        if (!grid[row][col]) {
+            grid[row][col] = {};
+        }
+        grid[row][col].bridger = cellData;
+
+        let x = col, y = row;
+
+        updateBrdigerTiles(cellData);
+        updateGrid();
+    } else {
+        grid[row][col] = cellData;
+    }
 }
 
 function eraseCell(row, col) {
@@ -292,6 +317,8 @@ function eraseCell(row, col) {
     cell.className = 'grid-cell';
     cell.style.background = '';
     cell.style.transform = '';
+
+    // TODO deleteBridgerExtras(cellData)
     if (grid[row][col] && grid[row][col].guid) {
         toErase.push(grid[row][col].guid);
     }
@@ -324,23 +351,59 @@ function rotateQuatBy90(cellData, axis = 'z') {
     cellData.quat = multiplyQuat(q90, cellData.quat);
 }
 
+function deleteBridgerExtras(cellData) {
+    const extraOffsets = getExtraTileOffsetsFromQuat(cellData.quat, cellData.flipped);
+    extraOffsets.forEach(([x, y, type]) => {
+        x += cellData.x;
+        y += cellData.y;
+        if (grid[y][x] && grid[y][x].type != "bridger_up" && grid[y][x].type != "bridger_down") {
+            return;
+        }
+        grid[y][x] = null;
+    });
+}
+
 function rotateCell(row, col) {
-    const cellData = grid[row][col];
+    let cellData = grid[row][col];
     if (!cellData) {
+        return;
+    }
+    if (bridgerMode && cellData.bridger) {
+        cellData = cellData.bridger;
+    }
+
+    if (cellData.type == "bridger_up" || cellData.type == "bridger_down") {
         return;
     }
 
     const cell = getCellElement(row, col);
 
+    if (cellData.type === 'bridger') {
+        deleteBridgerExtras(cellData);
+    }
+
     rotateQuatBy90(cellData, 'z');
     cellData.dirty = true;
 
     updateCellTransform(cell, cellData);
+
+    if (cellData.type === 'bridger') {
+        updateBrdigerTiles(cellData);
+        updateGrid();
+    }
 }
 
 function flipCell(row, col) {
-    const cellData = grid[row][col];
+    let cellData = grid[row][col];
     if (!cellData) {
+        return;
+    }
+
+    if (bridgerMode && cellData.bridger) {
+        cellData = cellData.bridger;
+    }
+
+    if (cellData.type == "bridger_up" || cellData.type == "bridger_down") {
         return;
     }
 
@@ -569,17 +632,6 @@ function selectDeposit(deposit) {
     renderDeposits();
 }
 
-function deleteSelectedDeposit() {
-    if (selectedDeposit) {
-        deposits = deposits.filter(d => d.id !== selectedDeposit.id);
-        selectedDeposit = null;
-        renderDeposits();
-        updateGridCellConnections();
-
-        document.getElementById('depositLabel').value = '';
-    }
-}
-
 function renderDeposits() {
     // Clear existing deposit elements
     document.querySelectorAll('.deposit-zone').forEach(el => el.remove());
@@ -625,38 +677,6 @@ function updateGridCellConnections() {
     });
 }
 
-function getDepositZoneWidth(side) {
-    const zone = document.querySelector(`.deposits-${side}`);
-    return zone.offsetWidth;
-}
-
-function getDepositZoneHeight(side) {
-    const zone = document.querySelector(`.deposits-${side}`);
-    return zone.offsetHeight;
-}
-
-function toggleDepositMode() {
-    depositMode = !depositMode;
-    const controls = document.getElementById('depositControls');
-    const modeText = document.getElementById('depositModeText');
-
-    if (depositMode) {
-        controls.style.display = 'block';
-        modeText.textContent = 'Exit Deposits';
-        currentTool = 'deposit';
-        document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('active'));
-        document.querySelector('[data-tool="deposit"]').classList.add('active');
-        document.getElementById('currentTool').textContent = 'Deposit';
-    } else {
-        controls.style.display = 'none';
-        modeText.textContent = 'Add Deposits';
-        currentTool = 'paint';
-        document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('active'));
-        document.querySelector('[data-tool="paint"]').classList.add('active');
-        document.getElementById('currentTool').textContent = 'Paint';
-    }
-}
-
 function clearGrid() {
     if (confirm('Are you sure you want to clear the entire grid?')) {
         for (let row = 0; row < 40; row++) {
@@ -664,9 +684,10 @@ function clearGrid() {
                 eraseCell(row, col);
             }
         }
-        clearSelection();
+        //clearSelection();
     }
 }
+window.clearGrid = clearGrid;
 
 function randomHex32() {
     let hex = '';
@@ -675,6 +696,7 @@ function randomHex32() {
     }
     return hex;
 }
+
 function floatToInt64String(float) {
     const buffer = new ArrayBuffer(8);
     const view = new DataView(buffer);
@@ -693,25 +715,35 @@ export function exportLevel() {
     for (let row = 0; row < 40; row++) {
         for (let col = 0; col < 50; col++) {
             const tileData = grid[row][col];
-            if (!tileData || !tileData.dirty) {
+            if (!tileData) {
                 continue;
             }
-            console.log(`Updating tile at (${row}, ${col}):`, tileData);
-            tileData.dirty = false;
-            if (!tileData.interactable) {
-                toAdd.push(tileData);
-                continue;
+            const updateTile = (data) => {
+                console.log(`Updating tile at (${row}, ${col}):`, data);
+                data.dirty = false;
+                if (!data.interactable) {
+                    toAdd.push(data);
+                    return;
+                }
+                data.interactable[2].value[2].value.y = data.flipped ? -1 : 1;
+                const quat = data.interactable[2].value[0].value;
+                quat.ix = floatToInt64String(data.quat.x);
+                quat.iy = floatToInt64String(data.quat.y);
+                quat.iz = floatToInt64String(data.quat.z);
+                quat.iw = floatToInt64String(data.quat.w);
+                quat.x = data.quat.x;
+                quat.y = data.quat.y;
+                quat.z = data.quat.z;
+                quat.w = data.quat.w;
             }
-            tileData.interactable[2].value[2].value.y = tileData.flipped ? -1 : 1;
-            const quat = tileData.interactable[2].value[0].value;
-            quat.ix = floatToInt64String(tileData.quat.x);
-            quat.iy = floatToInt64String(tileData.quat.y);
-            quat.iz = floatToInt64String(tileData.quat.z);
-            quat.iw = floatToInt64String(tileData.quat.w);
-            quat.x = tileData.quat.x;
-            quat.y = tileData.quat.y;
-            quat.z = tileData.quat.z;
-            quat.w = tileData.quat.w;
+
+            if (tileData.dirty) {
+                updateTile(tileData);
+            }
+            if (tileData.bridger && tileData.bridger.dirty) {
+                updateTile(tileData.bridger);
+            }
+
         }
     }
     let interactables = null;
@@ -862,6 +894,21 @@ function getExtraTileOffsetsFromQuat(quat, flipped) {
     }
 }
 
+function updateBrdigerTiles(tileData) {
+    // Racks are 3x1 so occupy extra tiles
+    const extraOffsets = getExtraTileOffsetsFromQuat(tileData.quat, tileData.flipped);
+    // To get the absolute positions:
+    extraOffsets.forEach(([x, y, type]) => {
+        x += tileData.x;
+        y += tileData.y;
+        if (!grid[y][x]) {
+            grid[y][x] = { ...tileData };
+            grid[y][x].type = type;
+            grid[y][x].dirty = false;
+        }
+    });
+}
+
 function processInteractable(interactable) {
     let transform = interactable[2].value;
     let ObjectName = interactable[0].value;
@@ -959,27 +1006,29 @@ function processInteractable(interactable) {
         flipped: Scale3D.y < 0,
         quat: quat,
         guid: interactable[4].value,
-        x: translation.x,
-        y: translation.y,
+        x: x,
+        y: y,
         interactable: interactable
     };
 
     if (type == 'bridger') {
-        // Racks are 3x1 so occupy extra tiles
-        const extraOffsets = getExtraTileOffsetsFromQuat(quat, tileData.flipped);
-        // To get the absolute positions:
-        const extraTiles = extraOffsets.map(([dx, dy, type]) => [x + dx, y + dy, type]);
-        extraTiles.forEach(([x, y, type]) => {
-            grid[y][x] = { ...tileData };
-            grid[y][x].type = type;
-        });
+        updateBrdigerTiles(tileData);
+
+
+        if (!grid[y][x]) {
+            grid[y][x] = {};
+        }
+        grid[y][x].bridger = tileData;
 
         return;
     }
 
     if (grid[y][x] != null) {
         console.warn("Tile already occupied at:", x, y);
-        return;
+        //return;
+    }
+    if (grid[y][x] && grid[y][x].bridger) {
+        tileData.bridger = grid[y][x].bridger;
     }
 
     grid[y][x] = tileData;
@@ -1027,8 +1076,6 @@ function quatToRotate3d(q) {
         axisZ = z / s;
     }
 
-    //console.log(`W: ${w}, Angle (rad): ${angle}, Axis: (${axisX}, ${axisY}, ${axisZ})`);
-
     return `rotate3d(${axisX}, ${axisY}, ${axisZ}, ${angle}rad)`;
 }
 
@@ -1040,19 +1087,26 @@ function updateCellTransform(cell, tileData) {
         cell.style.transform += 'scaleY(-1)'
     }
 }
+
 function updateGrid() {
     // Update visual grid
     for (let row = 0; row < 40; row++) {
         for (let col = 0; col < 50; col++) {
             const cell = getCellElement(row, col);
-            const tileData = grid[row][col];
+            let tileData = grid[row][col];
             if (tileData) {
+                if (bridgerMode && tileData.bridger) {
+                    tileData = tileData.bridger;
+                }
                 cell.style.background = `url("css/${tileData.type}.png") no-repeat center`;
                 updateCellTransform(cell, tileData);
 
                 cell.dataset.guid = tileData.guid;
                 cell.dataset.x = tileData.x;
                 cell.dataset.y = tileData.y;
+            } else {
+                cell.style.background = '';
+                cell.style.transform = '';
             }
         }
     }
@@ -1068,57 +1122,31 @@ export function importLevel() {
         if (file) {
             const reader = new FileReader();
             reader.onload = (event) => {
-                try {
-                    levelData = convertSavToRaw(event.target.result);
-                    window.levelData = levelData;
+                levelData = convertSavToRaw(event.target.result);
+                window.levelData = levelData;
 
-                    // grid = levelData.tiles;
-
-                    // // Import deposits if they exist
-                    // if (levelData.deposits) {
-                    //     deposits = levelData.deposits.map(d => ({
-                    //         id: Date.now() + Math.random(),
-                    //         side: d.side,
-                    //         tileRow: d.tileRow,
-                    //         tileCol: d.tileCol,
-                    //         x: (d.side === 'top' || d.side === 'bottom') ? d.tileCol * 17 : 0,
-                    //         y: (d.side === 'left' || d.side === 'right') ? d.tileRow * 17 : 0,
-                    //         label: d.label,
-                    //         color: d.color,
-                    //         selected: false
-                    //     }));
-                    //     renderDeposits();
-                    //     updateGridCellConnections();
-                    // } else {
-                    //     deposits = [];
-                    // }
-
-
-
-                    for (let i = 0; i < levelData.length; i++) {
-                        if (levelData[i].name === "InteractablesToSpawn") {
-                            let interactables = levelData[i].value;
-                            for (let j = 0; j < interactables.length; j++) {
-                                processInteractable(interactables[j]);
-                            }
+                for (let i = 0; i < levelData.length; i++) {
+                    if (levelData[i].name === "InteractablesToSpawn") {
+                        let interactables = levelData[i].value;
+                        for (let j = 0; j < interactables.length; j++) {
+                            processInteractable(interactables[j]);
                         }
-                        if (levelData[i].name === "StorageRacksAndParcels") {
-                            let racks = levelData[i].value;
-                            for (let j = 0; j < racks.length; j++) {
-                                if (racks[j][0].subtype == "F_InteractableToSave") {
-                                    processInteractable(racks[j][0].value);
-                                }
+                    }
+                    if (levelData[i].name === "StorageRacksAndParcels") {
+                        let racks = levelData[i].value;
+                        for (let j = 0; j < racks.length; j++) {
+                            if (racks[j][0].subtype == "F_InteractableToSave") {
+                                processInteractable(racks[j][0].value);
                             }
                         }
                     }
-
-
-                    updateGrid();
-
-                    clearSelection();
-                } catch (error) {
-                    alert('Error importing level: ' + error.message);
                 }
+
+
+                updateGrid();
+
+                clearSelection();
+
             };
             reader.readAsArrayBuffer(file);
         }
@@ -1128,6 +1156,16 @@ export function importLevel() {
 }
 
 window.importLevel = importLevel;
+
+export function deleteParcels() {
+    for (let i = 0; i < levelData.length; i++) {
+        if (levelData[i].name === "Parcels") {
+            levelData[i].value = [];
+        }
+    }
+}
+
+window.deleteParcels = deleteParcels;
 
 // Initialize the editor when the page loads
 init();
